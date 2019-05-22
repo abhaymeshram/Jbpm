@@ -3,8 +3,15 @@
 Quartz database Scripts : http://svn.terracotta.org/svn/quartz/tags/quartz-2.1.6/docs/dbTables/
 
 
-public class StartNewProcessWorkItemHandler implements org.kie.api.runtime.process.WorkItemHandler{
-	
+
+
+
+
+
+
+
+public class StartNewProcessWorkItemHandler implements org.kie.api.runtime.process.WorkItemHandler	{
+
 	private String processId;
 	private org.kie.api.runtime.process.ProcessWorkItemHandlerException.HandlingStrategy strategy;
 	
@@ -39,6 +46,5 @@ public class StartNewProcessWorkItemHandler implements org.kie.api.runtime.proce
 		// TODO Auto-generated method stub
 		
 	}
-
 }
 
