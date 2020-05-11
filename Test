@@ -1,0 +1,114 @@
+1) Create Maven project.
+
+2) Add dependency
+ <dependency>
+            <groupId>jboss</groupId>
+            <artifactId>jbosssx</artifactId>
+            <version>3.2.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jboss</groupId>
+            <artifactId>jboss-jaas</artifactId>
+            <version>3.2.3</version>
+            <scope>provided</scope>
+        </dependency>
+		
+3) Add class
+ package com.custom.login.module;
+
+import java.security.acl.Group;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
+
+import org.jboss.security.SimpleGroup;
+import org.jboss.security.SimplePrincipal;
+import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
+
+public class CustomeLoginModule extends UsernamePasswordLoginModule {
+
+    Logger logger = Logger.getLogger(CustomeLoginModule.class.getName());
+
+    public void initialize(Subject subject, CallbackHandler callbackHandler,
+                           Map sharedState,
+                           Map options) {
+
+        super.initialize(subject, callbackHandler, sharedState, options);
+    }
+    protected String getUsersPassword() throws LoginException {
+        logger.info("getUsersPassword password is" + this.sharedState.get("javax.security.auth.login.password"));
+        String password = (String) this.sharedState.get("javax.security.auth.login.password");
+        logger.info(" getUsersPassword String password is" + password);
+        logger.info(" getUsersPassword UserName is password is" + this.getUsername());
+
+        return this.getUsername();
+    }
+
+    @Override
+    protected boolean validatePassword(String inputPassword, String expectedPassword) {
+
+        // Let's encrypt the password typed by the user in the same way as the stored password
+
+        // so that they can be compared for equality.
+        logger.info("IN validatePassword inputPassword" + inputPassword);
+        logger.info("IN validatePassword expectedPassword" + expectedPassword);
+
+        String encryptedInputPassword = (inputPassword == null)? null : inputPassword.toUpperCase();
+
+        logger.info("Validating that (encrypted) input psw '%s' equals to (encrypted) '%s'\n" + " :: " +
+
+                encryptedInputPassword + " "+expectedPassword);
+
+        // Password check strategy: find the password from your storage (e.g. DB) and check that it's equal
+
+        // with inputPassword. We always return true, meaning password check will be skipped
+
+        return true;
+
+    }
+
+
+    protected Group[] getRoleSets() throws LoginException {
+        SimpleGroup group = new SimpleGroup("Roles");
+
+        try {
+
+            logger.info("Search here group for user: "+super.getUsername());
+
+            group.addMember(new SimplePrincipal("kie-server"));
+            group.addMember(new SimplePrincipal("rest-all"));
+            group.addMember(new SimplePrincipal("admin"));
+
+        } catch (Exception e) {
+
+            throw new LoginException("Failed to create group member for " + group);
+
+        }
+
+        return new Group[] { group };
+    }
+}
+
+4) Generate jar
+
+5) connect server using jboss-cli.bat --connect
+
+6) Run below command to add module
+
+module add --name=org.jboss.example --resources=F:\Code\jbossloginmodule\target\jboss-login-module-1.0-SNAPSHOT.jar --dependencies=javax.api,javax.persistence.api,javax.resource.api,javax.security.auth.message.api,javax.security.jacc.api,javax.servlet.api,javax.transaction.api,javax.xml.bind.api,javax.xml.stream.api,org.jboss.logging,org.infinispan,org.picketbox
+
+add jar name
+
+7) change in security domain
+<security-domain name="other" cache-type="default">
+					<authentication>
+						<!-- <login-module code="com.custom.login.module.CustomeLoginModule" flag="required"/> -->
+						 <login-module module="org.jboss.example" code="com.custom.login.module.CustomeLoginModule" flag="required"/>
+						 <login-module code="org.kie.security.jaas.KieLoginModule" flag="optional" module="deployment.business-central.war"/>
+                        <login-module code="org.kie.security.jaas.KieLoginModule" flag="optional" module="deployment.jbpm-casemgmt.war"/>
+					</authentication>
+				</security-domain>
