@@ -3,7 +3,7 @@
 Quartz database Scripts : http://svn.terracotta.org/svn/quartz/tags/quartz-2.1.6/docs/dbTables/
 
 
-
+https://devwithus.com/download-upload-files-with-spring-boot/
 
 
 
